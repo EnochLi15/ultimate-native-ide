@@ -1,0 +1,21 @@
+{
+  "name": "@ultimate-ide/editor-as-tool",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "R4: editor-as-tool — agent-facing tools that drive the workbench UI (open, reveal, showDiff, setLayout, presentPlan). These tools let the agent actively orchestrate the editor, not just produce text. The tool bodies emit events to the renderer via the AgentHostEvent channel.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tools": "./src/tools.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
