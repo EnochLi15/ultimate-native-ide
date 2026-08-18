@@ -1,0 +1,23 @@
+{
+  "name": "@ultimate-ide/agent-host",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "The Agent Host process: a first-class node process (electron UtilityProcess) that owns the DSH Cordis tree — agent-loop, tools, fs, lsp, terminals, sandbox, session log — and exposes it to the VS Code renderer over the deep-contract RPC.",
+  "main": "./src/main.ts",
+  "exports": {
+    ".": "./src/main.ts",
+    "./rpc-server": "./src/rpc-server.ts",
+    "./dsh-boot": "./src/dsh-boot.ts",
+    "./transport": "./src/transport.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

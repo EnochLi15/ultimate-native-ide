@@ -1,0 +1,18 @@
+{
+  "name": "@ultimate-ide/root",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Ultimate AI Native IDE — fork VS Code + DeepSeek Harness agent kernel deep fusion.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc -b",
+    "typecheck:contracts": "npm -w @ultimate-ide/contracts run typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.0"
+  }
+}
