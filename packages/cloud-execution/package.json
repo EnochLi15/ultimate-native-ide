@@ -1,0 +1,22 @@
+{
+  "name": "@ultimate-ide/cloud-execution",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "R7: cloud execution world — the architectural moat. Swaps the local fs/subprocess/terminal execution world for an E2B cloud Linux sandbox with zero code changes to bash/terminal/lsp (they delegate to ctx.fs/ctx.subprocess). The agent's hands reach the cloud while its face stays in the editor.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./switcher": "./src/switcher.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
