@@ -17,16 +17,15 @@
  * @module vs/platform/ultimateNative/electron-main/agentHostSpawner
  */
 
+import { MessageChannelMain, utilityProcess } from 'electron';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { utilityProcess } from 'vs/code/electron-main/utilityProcess';
-import { MessageChannelMain } from 'vs/base/parts/sandbox/electron-main/electronBase';
 
 /**
  * The Agent Host connection — carries the renderer-side MessagePort.
  */
 export interface IAgentHostConnection {
 	/** The port the renderer receives to talk to the Agent Host. */
-	readonly rendererPort: MessagePortMain;
+	readonly rendererPort: MessageChannelMain['port1'];
 	/** Dispose: kill the Agent Host process. */
 	dispose(): void;
 }
@@ -66,10 +65,14 @@ export async function spawnAgentHost(
 		console.error(`[agent-host] ${chunk.toString().trim()}`);
 	});
 
+	const disposable = new Disposable(() => {
+		child.kill();
+	});
+
 	return {
 		rendererPort: port2,
 		dispose() {
-			child.kill();
+			disposable.dispose();
 		},
 	};
 }
