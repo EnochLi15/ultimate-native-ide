@@ -119,10 +119,17 @@ class LiveDshKernel implements DshKernel {
     this.shutdown = shutdown
     this.onEvent = onEvent
 
-    // Wire DSH session events → renderer. The session service emits durable
-    // events; we subscribe so the renderer sees the live stream.
-    // (The real subscription API is ctx.sessions.on(...) — wired in R0.5
-    // verification once we confirm the exact event API shape.)
+    // Wire DSH session events → renderer. The session store emits durable
+    // events on the 'session/event' channel; we forward each to the renderer
+    // so the UI sees the live stream (turn/step/tool/assistant messages).
+    try {
+      ctx.events.on('session/event', (_session: unknown, event: unknown) => {
+        onEvent({ kind: 'session-event', sessionId: (_session as { id?: string })?.id ?? '', ...(event as object) } as never)
+      })
+    } catch {
+      // The event API may not be available until the session plugin mounts;
+      // the forwarder is best-effort during boot.
+    }
   }
 
   async createAgent(options: CreateAgentOptions): Promise<{ handle: AgentHandle; nextSeq: number }> {
@@ -197,25 +204,43 @@ class LiveDshKernel implements DshKernel {
     if (agent) await agent.whenIdle()
   }
 
-  async queryEvents(sessionId: SessionId, _fromSeq?: number): Promise<SessionEvent[]> {
+  async queryEvents(sessionId: SessionId, fromSeq?: number): Promise<SessionEvent[]> {
     const sessions = this.ctx.get('sessions')
     if (!sessions) return []
-    // DSH's session store exposes the event log; the exact query API is
-    // sessions.get(id).events or similar. Return empty until the API is confirmed.
-    return []
+    const session = sessions.get(sessionId)
+    if (!session) return []
+    const events = session.events as readonly SessionEvent[]
+    if (fromSeq === undefined) return [...events]
+    return events.filter((e) => e.seq >= fromSeq)
   }
 
   async listTools(_sessionId: SessionId): Promise<ToolDefinition[]> {
     const tools = this.ctx.get('tools')
     if (!tools) return []
-    // DSH's tool registry exposes visible definitions.
-    return []
+    // ctx.tools.schemas() returns visible tool schemas (name/description/parameters).
+    const schemas = tools.schemas() as Array<{ name: string; description: string; parameters: object }>
+    return schemas.map((s) => ({ name: s.name, description: s.description, parameters: s.parameters }))
   }
 
-  async invokeTool(_sessionId: SessionId, _tool: string, _args: unknown): Promise<ToolResult> {
+  async invokeTool(sessionId: SessionId, tool: string, args: unknown): Promise<ToolResult> {
     const tools = this.ctx.get('tools')
     if (!tools) throw new Error('dsh-boot: ctx.tools not available')
-    throw new Error('dsh-boot: direct tool invocation not yet wired (R1)')
+    const agents = this.ctx.get('agents')
+    const agent = agents?.get(sessionId)
+    // Execute the tool through the real dispatch pipeline.
+    const controller = new AbortController()
+    const result = await tools.execute({
+      callId: `direct-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` as never,
+      name: tool,
+      arguments: args,
+      agent: agent as never,
+      signal: controller.signal,
+    } as never) as { content: ContentBlock[]; isError: boolean; meta?: unknown }
+    return {
+      content: result.content ?? [{ type: 'text', text: '(no output)' }],
+      isError: result.isError ?? false,
+      meta: result.meta as never,
+    }
   }
 
   async fsResolve(path: string, _cwd?: string): Promise<FsTarget> {
