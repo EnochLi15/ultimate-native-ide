@@ -94,6 +94,16 @@ describe('R0.4: VS Code fork integration patches', () => {
     expect(content).toContain('__provenance')
   })
 
+  it('sessionLogSpine.ts exists with timeline/task-tree/replay', () => {
+    const file = resolve(vscodeRoot, 'src/vs/workbench/contrib/ultimateNative/sessionLogSpine.ts')
+    expect(existsSync(file)).toBe(true)
+    const content = readFileSync(file, 'utf-8')
+    expect(content).toContain('deriveTimeline')
+    expect(content).toContain('deriveTaskTree')
+    expect(content).toContain('ReplayCursor')
+    expect(content).toContain('forkSeed')
+  })
+
   it('all VS Code module imports point to existing files', () => {
     const imports = [
       'src/vs/base/common/lifecycle.ts',
