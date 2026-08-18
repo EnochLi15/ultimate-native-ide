@@ -6,7 +6,7 @@
 import { app, BrowserWindow, desktopCapturer, Details, globalShortcut, GPUFeatureStatus, powerMonitor, protocol, screen as electronScreen, session, Session, systemPreferences, WebFrameMain } from 'electron';
 import { addUNCHostToAllowlist, disableUNCAccessRestrictions } from '../../base/node/unc.js';
 import { validatedIpcMain } from '../../base/parts/ipc/electron-main/ipcMain.js';
-import { hostname, release } from 'os';
+import { hostname, homedir, release } from 'os';
 import { initWindowsVersionInfo } from '../../base/node/windowsVersion.js';
 import { VSBuffer } from '../../base/common/buffer.js';
 import { toErrorMessage } from '../../base/common/errorMessage.js';
@@ -763,6 +763,15 @@ export class CodeApplication extends Disposable {
 		// Signal phase: ready - before opening first window
 		this.lifecycleMainService.phase = LifecycleMainPhase.Ready;
 
+		// Ultimate Native IDE: Spawn the Agent Host (DSH kernel) as a UtilityProcess
+		// before opening windows, so the renderer can connect to it on startup.
+		try {
+			await appInstantiationService.invokeFunction(accessor => this.spawnUltimateNativeAgentHost(accessor));
+		} catch (err) {
+			console.error('[ultimate-native] Failed to spawn Agent Host:', err);
+			// Non-fatal: the workbench runs in degraded mode without the agent kernel.
+		}
+
 		// Open Windows
 		await appInstantiationService.invokeFunction(accessor => this.openFirstWindow(accessor, initialProtocolUrls));
 
@@ -1460,6 +1469,35 @@ export class CodeApplication extends Disposable {
 		const utilityProcessWorkerChannel = ProxyChannel.fromService(accessor.get(IUtilityProcessWorkerMainService), disposables);
 		mainProcessElectronServer.registerChannel(ipcUtilityProcessWorkerChannelName, utilityProcessWorkerChannel);
 	}
+
+	/**
+	 * Ultimate Native IDE: Spawn the DSH Agent Host as a UtilityProcess and
+	 * store the connection so the renderer can receive its MessagePort.
+	 *
+	 * This is the invasive electron-main hook (R0.4). It forks the Agent Host
+	 * CLI script, creates a MessageChannelMain, and stores the renderer-side
+	 * port for delivery to BrowserWindows via preload.
+	 */
+	private async spawnUltimateNativeAgentHost(accessor: ServicesAccessor): Promise<void> {
+		const path = await import('path');
+		const workspaceRoot = process.cwd();
+		const dshHome = process.env.DSH_HOME ?? path.join(homedir(), '.dsh-home');
+
+		// The Agent Host script path. In dev, this points to the ultimate-native-ide
+		// packages/agent-host/src/cli.ts (run via tsx). In production, a built JS file.
+		const agentHostScript = process.env.ULTIMATE_NATIVE_AGENT_HOST_SCRIPT
+			?? path.join(__dirname, '..', '..', '..', '..', 'packages', 'agent-host', 'src', 'cli.ts');
+
+		// Dynamic import to avoid loading the spawner until needed.
+		const { spawnAgentHost } = await import('vs/platform/ultimateNative/electron-main/agentHostSpawner');
+		this._ultimateNativeAgentHost = await spawnAgentHost(workspaceRoot, dshHome, agentHostScript);
+
+		// The renderer port is delivered to BrowserWindows via preload IPC.
+		// The windowsMainService will send it when each window is created.
+		console.log('[ultimate-native] Agent Host spawned');
+	}
+
+	private _ultimateNativeAgentHost: { rendererPort: import('electron').MessagePortMain; dispose(): void } | undefined;
 
 	private async openFirstWindow(accessor: ServicesAccessor, initialProtocolUrls: IInitialProtocolUrls | undefined): Promise<ICodeWindow[]> {
 		const windowsMainService = this.windowsMainService = accessor.get(IWindowsMainService);
