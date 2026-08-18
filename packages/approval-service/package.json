@@ -1,0 +1,21 @@
+{
+  "name": "@ultimate-ide/approval-service",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "R1.6: the human-in-the-loop approval contract — the renderer-side service that manages pending approval requests from the agent (bash/fs-write/escalation/plan) and delivers the human's decision. This is the structural feature that makes the agent safe to grant execution authority (architecture invariant: '审批是一等公民').",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./service": "./src/service.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
