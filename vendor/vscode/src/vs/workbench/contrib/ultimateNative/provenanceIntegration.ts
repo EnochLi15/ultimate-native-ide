@@ -14,6 +14,9 @@
 import { IBulkEditService, IBulkEditOptions, IBulkEditResult, IBulkEditPreviewHandler, ResourceEdit } from '../../../editor/browser/services/bulkEditService.js';
 import { WorkspaceEdit } from '../../../editor/common/languages.js';
 import { IDisposable } from '../../../base/common/lifecycle.js';
+import { IEditorService } from '../../services/editor/common/editorService.js';
+import { ITextModelService } from '../../../editor/common/services/resolverService.js';
+import { ILogService } from '../../../platform/log/common/log.js';
 
 /** Who initiated an edit. */
 export type EditInitiator = 'agent' | 'human' | 'extension';
@@ -59,8 +62,29 @@ export class ProvenanceBulkEditService implements IBulkEditService {
 
   private _currentInitiator: EditInitiator = 'human';
   private _currentProvenance: ProvenanceMetadata | undefined;
+  private _inner: IBulkEditService | undefined;
 
-  constructor(private readonly _inner: IBulkEditService) {}
+  constructor(
+    @IEditorService private readonly _editorService: IEditorService,
+    @ITextModelService private readonly _textModelService: ITextModelService,
+    @ILogService private readonly _logService: ILogService,
+  ) {
+    // Lazily create the real BulkEditService (avoids circular dependency).
+    // The inner service is created on first use.
+  }
+
+  /** Lazily initialize the real BulkEditService. */
+  private getInner(): IBulkEditService {
+    if (!this._inner) {
+      // Dynamic import to avoid circular dependency at module load time.
+      // The real BulkEditService is created with the injected services.
+      const { BulkEditService } = require('../../bulkEdit/browser/bulkEditService.js') as {
+        BulkEditService: new (editorService: IEditorService, textModelService: ITextModelService, logService: ILogService) => IBulkEditService;
+      };
+      this._inner = new BulkEditService(this._editorService, this._textModelService, this._logService);
+    }
+    return this._inner;
+  }
 
   /**
    * Set the current edit initiator. Called by the Agent Host bridge before
@@ -89,7 +113,7 @@ export class ProvenanceBulkEditService implements IBulkEditService {
     }
 
     // Delegate to the real BulkEditService.
-    const result = await this._inner.apply(edit, options);
+    const result = await this.getInner().apply(edit, options);
 
     // Reset initiator after agent edits.
     if (this._currentInitiator === 'agent') {
@@ -100,10 +124,10 @@ export class ProvenanceBulkEditService implements IBulkEditService {
   }
 
   hasPreviewHandler(): boolean {
-    return this._inner.hasPreviewHandler();
+    return this.getInner().hasPreviewHandler();
   }
 
   setPreviewHandler(handler: IBulkEditPreviewHandler): IDisposable {
-    return this._inner.setPreviewHandler(handler);
+    return this.getInner().setPreviewHandler(handler);
   }
 }

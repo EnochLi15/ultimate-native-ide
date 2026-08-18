@@ -322,6 +322,13 @@ export class BulkEditService implements IBulkEditService {
 
 registerSingleton(IBulkEditService, BulkEditService, InstantiationType.Delayed);
 
+// Ultimate Native IDE: Override IBulkEditService with the provenance-aware decorator.
+// This wraps the real BulkEditService to attach provenance metadata (initiator + step id)
+// to every edit, making "who changed this line, in which turn" queryable.
+// The override is applied after the original registration, so it takes precedence.
+import { ProvenanceBulkEditService } from '../../ultimateNative/provenanceIntegration.js';
+registerSingleton(IBulkEditService, ProvenanceBulkEditService, InstantiationType.Delayed);
+
 const autoSaveSetting = 'files.refactoring.autoSave';
 
 Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration({
