@@ -9,10 +9,14 @@
     ".": "./src/main.ts",
     "./rpc-server": "./src/rpc-server.ts",
     "./dsh-boot": "./src/dsh-boot.ts",
-    "./transport": "./src/transport.ts"
+    "./transport": "./src/transport.ts",
+    "./stdio-port": "./src/stdio-port.ts",
+    "./cli": "./src/cli.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "cli": "node --import tsx/esm src/cli.ts",
+    "verify:cli": "node --import tsx/esm tests/cli-verify.ts"
   },
   "dependencies": {
     "@ultimate-ide/contracts": "workspace:*"
