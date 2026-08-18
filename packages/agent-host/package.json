@@ -23,6 +23,13 @@
   },
   "devDependencies": {
     "@ultimate-ide/ide-bridge-renderer": "workspace:*",
+    "@ultimate-ide/session-log-spine": "workspace:*",
+    "@ultimate-ide/provenance": "workspace:*",
+    "@ultimate-ide/approval-service": "workspace:*",
+    "@ultimate-ide/agent-view": "workspace:*",
+    "@ultimate-ide/extension-bridge": "workspace:*",
+    "@ultimate-ide/cloud-execution": "workspace:*",
+    "@ultimate-ide/skill-market": "workspace:*",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0"
   }
