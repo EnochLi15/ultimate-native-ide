@@ -5,7 +5,9 @@
     "paths": {
       "@ultimate-ide/contracts": ["../contracts/src/index.ts"],
       "@ultimate-ide/contracts/*": ["../contracts/src/*"],
-      "@ultimate-ide/ide-bridge-renderer": ["../ide-bridge-renderer/src/index.ts"]
+      "@ultimate-ide/ide-bridge-renderer": ["../ide-bridge-renderer/src/index.ts"],
+      "@deepseek-ai/cordis": ["../../vendor/dsh/vendor/cordis/src/index.ts"],
+      "@deepseek-ai/cordis/*": ["../../vendor/dsh/vendor/cordis/src/*"]
     },
     "types": ["node"]
   },

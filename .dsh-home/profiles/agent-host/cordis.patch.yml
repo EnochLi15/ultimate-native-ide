@@ -1,0 +1,3 @@
+# Patch layer: keep the base composition, suppress nothing.
+# The agent-host profile mounts only dsh-base (DEFAULT_PROFILE_BUNDLES).
+[]

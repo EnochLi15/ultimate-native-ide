@@ -3,3 +3,18 @@ lib/
 dist/
 *.tsbuildinfo
 .DS_Store
+
+# DSH vendored build artifacts (rebuilt from source, not committed)
+vendor/dsh/**/lib/
+vendor/dsh/**/node_modules/
+vendor/dsh/node_modules/
+
+# DSH workspace self-referential symlinks (created by pnpm install)
+vendor/dsh/packages/*/*/*
+vendor/dsh/vendor/*/*
+
+# DSH home profile symlinks (rebuilt by setup script, not committed)
+.dsh-home/profiles/node_modules/
+
+# Root node_modules symlinks into vendored DSH (rebuilt by setup)
+node_modules/@deepseek-ai/
