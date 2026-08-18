@@ -67,7 +67,12 @@ export class AgentHostRpcServer {
   /** Route one request to the matching AgentHostApi method. */
   private async dispatch(req: RpcRequest): Promise<void> {
     try {
-      const result = await this.invoke(req.method, req.args)
+      let result: unknown
+      if (req.method === '__handshake') {
+        result = await this.handshake(req.args[0] as BridgeHandshake)
+      } else {
+        result = await this.invoke(req.method, req.args)
+      }
       this.transport.respond(req.id, true, result)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)

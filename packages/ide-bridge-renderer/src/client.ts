@@ -50,12 +50,6 @@ interface RpcEvent {
   readonly payload: unknown
 }
 
-/** A handshake-response envelope (the Agent Host's first event). */
-interface HandshakeResponseEvent {
-  readonly kind: 'handshake-response'
-  readonly response: BridgeHandshakeResponse
-}
-
 /**
  * The renderer's bridge to the Agent Host. Construct with a {@link WirePort},
  * call {@link connect} to handshake, then use {@link api} to make typed calls
@@ -84,25 +78,10 @@ export class IdeBridge {
       version: 1,
       workspaceRoot,
     }
-
-    return new Promise<BridgeHandshakeResponse>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('ide-bridge: handshake timeout')), 10_000)
-
-      // Temporarily intercept events to catch the handshake response.
-      const origHandler = this.eventHandler
-      this.eventHandler = (event) => {
-        const e = event as unknown as HandshakeResponseEvent
-        if (e?.kind === 'handshake-response') {
-          clearTimeout(timeout)
-          this.eventHandler = origHandler
-          this._connected = true
-          resolve(e.response)
-        }
-      }
-
-      // The handshake is sent as a raw event (the Agent Host awaits it).
-      this.send({ kind: 'event', payload: handshake })
-    })
+    // The handshake is a special RPC request (reuses the request/response path).
+    const response = await this.call('__handshake', [handshake])
+    this._connected = true
+    return response as BridgeHandshakeResponse
   }
 
   /** Subscribe to the Agent Host event stream. */
@@ -144,7 +123,7 @@ export class IdeBridge {
   }
 
   private async call(method: string, args: readonly unknown[]): Promise<unknown> {
-    if (!this._connected && method !== 'connect') {
+    if (!this._connected && method !== '__handshake') {
       throw new Error(`ide-bridge: not connected (call connect() first)`)
     }
     const id = this.nextId()
@@ -162,7 +141,7 @@ export class IdeBridge {
 
   private handleRaw(raw: unknown): void {
     if (typeof raw !== 'object' || raw === null) return
-    const msg = raw as RpcRequest | RpcResponse | RpcEvent | HandshakeResponseEvent
+    const msg = raw as RpcRequest | RpcResponse | RpcEvent
     switch (msg.kind) {
       case 'response':
         this.responseWaiters.get(msg.id)?.(msg)
@@ -170,9 +149,6 @@ export class IdeBridge {
         break
       case 'event':
         this.eventHandler?.(msg.payload as AgentHostEvent)
-        break
-      case 'handshake-response':
-        this.eventHandler?.(msg as unknown as AgentHostEvent)
         break
     }
   }
