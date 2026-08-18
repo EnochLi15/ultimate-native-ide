@@ -1,0 +1,21 @@
+{
+  "name": "@ultimate-ide/ide-bridge-renderer",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "The renderer-side deep-contract client: holds a typed proxy of AgentHostApi and subscribes to the Agent Host event stream. This is the renderer's single door to the DSH agent kernel.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
