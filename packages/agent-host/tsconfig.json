@@ -2,14 +2,23 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "skipLibCheck": true,
+    "allowJs": true,
     "paths": {
       "@ultimate-ide/contracts": ["../contracts/src/index.ts"],
       "@ultimate-ide/contracts/*": ["../contracts/src/*"],
       "@ultimate-ide/ide-bridge-renderer": ["../ide-bridge-renderer/src/index.ts"],
-      "@deepseek-ai/cordis": ["../../vendor/dsh/vendor/cordis/src/index.ts"],
-      "@deepseek-ai/cordis/*": ["../../vendor/dsh/vendor/cordis/src/*"]
+      "@ultimate-ide/session-log-spine": ["../session-log-spine/src/index.ts"],
+      "@ultimate-ide/provenance": ["../provenance/src/index.ts"],
+      "@ultimate-ide/approval-service": ["../approval-service/src/index.ts"],
+      "@ultimate-ide/agent-view": ["../agent-view/src/index.ts"],
+      "@ultimate-ide/extension-bridge": ["../extension-bridge/src/index.ts"],
+      "@ultimate-ide/cloud-execution": ["../cloud-execution/src/index.ts"],
+      "@ultimate-ide/skill-market": ["../skill-market/src/index.ts"],
+      "@ultimate-ide/editor-as-tool": ["../editor-as-tool/src/index.ts"]
     },
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["../../vendor/dsh/**"]
 }
