@@ -27,7 +27,7 @@ describe('R0: real DSH agent lifecycle', () => {
     })
 
     try {
-      const sessionId = 'test-agent-1' as never
+      const sessionId = `test-agent-${Date.now()}-${Math.random().toString(36).slice(2,6)}` as never
       const result = await kernel.createAgent({
         sessionId,
         meta: { cwd: process.cwd() },
@@ -57,7 +57,7 @@ describe('R0: real DSH agent lifecycle', () => {
     })
 
     try {
-      const sessionId = 'test-agent-2' as never
+      const sessionId = `test-agent-${Date.now()}-${Math.random().toString(36).slice(2,6)}` as never
       await kernel.createAgent({
         sessionId,
         meta: { cwd: process.cwd() },
@@ -82,7 +82,7 @@ describe('R0: real DSH agent lifecycle', () => {
     })
 
     try {
-      const sessionId = 'test-agent-3' as never
+      const sessionId = `test-agent-${Date.now()}-${Math.random().toString(36).slice(2,6)}` as never
       await kernel.createAgent({
         sessionId,
         meta: { cwd: process.cwd() },
@@ -111,7 +111,7 @@ describe('R0: real DSH agent lifecycle', () => {
     })
 
     try {
-      const sessionId = 'test-agent-4' as never
+      const sessionId = `test-agent-${Date.now()}-${Math.random().toString(36).slice(2,6)}` as never
       await kernel.createAgent({
         sessionId,
         meta: { cwd: process.cwd() },
