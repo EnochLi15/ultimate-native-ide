@@ -96,4 +96,17 @@ describe('R0.4: VS Code fork integration patches', () => {
       expect(existsSync(resolve(vscodeRoot, imp))).toBe(true)
     }
   })
+
+  it('app.ts hook is before openFirstWindow (not after)', () => {
+    const file = resolve(vscodeRoot, 'src/vs/code/electron-main/app.ts')
+    const content = readFileSync(file, 'utf-8')
+    const hookPos = content.indexOf('spawnUltimateNativeAgentHost')
+    const windowPos = content.indexOf('this.openFirstWindow')
+    expect(hookPos).toBeGreaterThan(-1)
+    expect(windowPos).toBeGreaterThan(-1)
+    // The hook call (not the method definition) must be before openFirstWindow call
+    const hookCallPos = content.indexOf('this.spawnUltimateNativeAgentHost')
+    expect(hookCallPos).toBeGreaterThan(-1)
+    expect(hookCallPos).toBeLessThan(windowPos)
+  })
 })
