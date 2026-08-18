@@ -104,6 +104,35 @@ describe('R0.4: VS Code fork integration patches', () => {
     expect(content).toContain('forkSeed')
   })
 
+  it('editorAsToolHandler.ts exists with open/showDiff/setLayout dispatch', () => {
+    const file = resolve(vscodeRoot, 'src/vs/workbench/contrib/ultimateNative/editorAsToolHandler.ts')
+    expect(existsSync(file)).toBe(true)
+    const content = readFileSync(file, 'utf-8')
+    expect(content).toContain('EditorAsToolHandler')
+    expect(content).toContain('handleOpen')
+    expect(content).toContain('handleShowDiff')
+    expect(content).toContain('handleSetLayout')
+  })
+
+  it('extensionBridge.ts exists with EhToAh + AhToEh bridges', () => {
+    const file = resolve(vscodeRoot, 'src/vs/workbench/contrib/ultimateNative/extensionBridge.ts')
+    expect(existsSync(file)).toBe(true)
+    const content = readFileSync(file, 'utf-8')
+    expect(content).toContain('EhToAhBridge')
+    expect(content).toContain('AhToEhBridge')
+    expect(content).toContain('registerModelProvider')
+    expect(content).toContain('registerAgentTool')
+  })
+
+  it('cloudExecution.ts exists with switcher + worldPatchYaml', () => {
+    const file = resolve(vscodeRoot, 'src/vs/workbench/contrib/ultimateNative/cloudExecution.ts')
+    expect(existsSync(file)).toBe(true)
+    const content = readFileSync(file, 'utf-8')
+    expect(content).toContain('ExecutionWorldSwitcher')
+    expect(content).toContain('worldPatchYaml')
+    expect(content).toContain('cloud-e2b')
+  })
+
   it('all VS Code module imports point to existing files', () => {
     const imports = [
       'src/vs/base/common/lifecycle.ts',
