@@ -16,5 +16,8 @@ vendor/dsh/vendor/*/*
 # DSH home profile symlinks (rebuilt by setup script, not committed)
 .dsh-home/profiles/node_modules/
 
+# DSH session logs (test/runtime artifacts, not committed)
+.dsh-home/sessions/
+
 # Root node_modules symlinks into vendored DSH (rebuilt by setup)
 node_modules/@deepseek-ai/

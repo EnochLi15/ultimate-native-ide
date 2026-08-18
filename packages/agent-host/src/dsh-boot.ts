@@ -113,6 +113,8 @@ class LiveDshKernel implements DshKernel {
   private readonly ctx: Context
   private readonly shutdown: ProcessShutdown
   private readonly onEvent: DshEventListener
+  /** Maps sessionId → the real DSH AgentHandle (for disposal). */
+  private readonly handles = new Map<string, { dispose(): Promise<void> }>()
 
   constructor(ctx: Context, shutdown: ProcessShutdown, onEvent: DshEventListener) {
     this.ctx = ctx
@@ -135,13 +137,14 @@ class LiveDshKernel implements DshKernel {
   async createAgent(options: CreateAgentOptions): Promise<{ handle: AgentHandle; nextSeq: number }> {
     const agents = this.ctx.get('agents')
     if (!agents) throw new Error('dsh-boot: ctx.agents not available — profile did not mount the agent registry')
-    // DSH's createAgent takes a CreateAgentOptions with a real Cordis Context
-    // as ownerCtx. The Agent Host owns the root context, so we pass this.ctx.
-    const realHandle = await agents.createAgent(this.ctx, {
+    // DSH's AgentRegistry.create(options) uses its own ctx as owner internally.
+    const realHandle = await agents.create({
       sessionId: options.sessionId,
       meta: options.meta as never,
       agentOptions: options.agentOptions as never,
     } as never)
+    // Keep the handle for disposal.
+    this.handles.set(options.sessionId as string, realHandle as { dispose(): Promise<void> })
     return {
       handle: {
         sessionId: options.sessionId,
@@ -155,10 +158,11 @@ class LiveDshKernel implements DshKernel {
   async resumeAgent(options: ResumeAgentOptions): Promise<{ handle: AgentHandle; nextSeq: number }> {
     const agents = this.ctx.get('agents')
     if (!agents) throw new Error('dsh-boot: ctx.agents not available')
-    await agents.resume(this.ctx, {
+    const realHandle = await agents.resume({
       resumeSessionId: options.resumeSessionId,
       agentOptions: options.agentOptions as never,
     } as never)
+    this.handles.set(options.resumeSessionId as string, realHandle as { dispose(): Promise<void> })
     return {
       handle: { sessionId: options.resumeSessionId, options: options.agentOptions ?? {}, status: 'idle' },
       nextSeq: 0,
@@ -168,10 +172,16 @@ class LiveDshKernel implements DshKernel {
   async disposeAgent(sessionId: SessionId): Promise<void> {
     const agents = this.ctx.get('agents')
     if (!agents) return
+    // Prefer the handle's dispose (stops loop, drains, unregisters, removes session).
+    const handle = this.handles.get(sessionId as string)
+    if (handle) {
+      this.handles.delete(sessionId as string)
+      await handle.dispose()
+      return
+    }
+    // Fallback: cancel + await idle if the agent exists but we lost the handle.
     const agent = agents.get(sessionId)
     if (agent) {
-      // Dispose via the registry; the real Agent has a dispose path through
-      // its owning handle. For now, cancel + await idle.
       agent.cancel('disposed' as never)
       await agent.whenIdle()
     }
