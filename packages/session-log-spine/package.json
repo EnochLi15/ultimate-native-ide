@@ -1,0 +1,23 @@
+{
+  "name": "@ultimate-ide/session-log-spine",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "R3: session log spine — the renderer-side projection layer that derives timeline, task tree, and replay views from the DSH SessionEvent stream. Pure logic, no VS Code dependency; the workbench consumes these projections to render the session's work memory.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./timeline": "./src/timeline.ts",
+    "./task-tree": "./src/task-tree.ts",
+    "./replay": "./src/replay.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
