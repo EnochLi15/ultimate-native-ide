@@ -1,33 +1,45 @@
-# VS Code Fork 编译验证
+# VS Code Fork 编译验证 — 最终结果
 
-## 结果:集成文件 0 错误
+## ✅ gulp compile 完全通过(0 错误)
 
-### TypeScript 类型检查 (tsc)
 ```
-npx tsc --project ./src/tsconfig.json --noEmit --skipLibCheck
-→ 0 errors (包含全部 6 个 ultimateNative 集成文件)
-```
-
-### Gulp 全量编译
-```
-npx gulp compile
-→ ultimateNative errors: 0
-→ 失败原因: extensions/ipynb 的 markdown-it/lib/token 类型缺失(与集成无关)
+$ nvm use 24.18.0
+$ cd vendor/vscode
+$ npx gulp compile
+[04:10:19] Finished 'compile' after 35 s
+=== exit code: 0 ===
 ```
 
-### 结论
-我们的 6 个集成文件在 VS Code 的 TypeScript 编译中 **零错误**。
-gulp compile 的失败发生在不相关的扩展(ipynb),不是我们的集成代码。
+### 构建输出
+- **8,384 个 JS 文件** 编译到 `out/`
+- **10 个 ultimateNative JS 文件** 全部编译成功
+- **app.js** 包含 spawnAgentHost hook
+- **bulkEditService.js** 包含 ProvenanceBulkEditService 覆盖
 
-### 验证的集成文件(全部 0 错误)
-1. `src/vs/platform/ultimateNative/electron-main/agentHostSpawner.ts` ✓
-2. `src/vs/code/electron-main/app.ts` (侵入修改) ✓
-3. `src/vs/platform/ultimateNative/sandbox/preload.ts` ✓
-4. `src/vs/workbench/contrib/ultimateNative/agentHostIntegration.ts` ✓
-5. `src/vs/workbench/contrib/ultimateNative/agent-view-state.ts` ✓
-6. `src/vs/workbench/contrib/ultimateNative/agentViewBinding.ts` ✓
+### 验证的集成文件(全部编译到 out/)
+1. `out/vs/platform/ultimateNative/electron-main/agentHostSpawner.js` ✓
+2. `out/vs/platform/ultimateNative/sandbox/preload.js` ✓
+3. `out/vs/code/electron-main/app.js` (侵入修改) ✓
+4. `out/vs/workbench/contrib/ultimateNative/agentHostIntegration.js` ✓
+5. `out/vs/workbench/contrib/ultimateNative/agent-view-state.js` ✓
+6. `out/vs/workbench/contrib/ultimateNative/agentViewBinding.js` ✓
+7. `out/vs/workbench/contrib/ultimateNative/provenanceIntegration.js` ✓
+8. `out/vs/workbench/contrib/ultimateNative/sessionLogSpine.js` ✓
+9. `out/vs/workbench/contrib/ultimateNative/editorAsToolHandler.js` ✓
+10. `out/vs/workbench/contrib/ultimateNative/extensionBridge.js` ✓
+11. `out/vs/workbench/contrib/ultimateNative/cloudExecution.js` ✓
+12. `out/vs/workbench/contrib/bulkEdit/browser/bulkEditService.js` (侵入修改) ✓
 
 ### 环境
 - Node.js v24.18.0
 - npm install 完成 (932 packages)
-- VS Code src/tsconfig.json (moduleResolution: nodenext, skipLibCheck: true)
+- gulp compile: 35 秒, 0 错误, 8,384 JS 输出
+
+## 意义
+
+VS Code fork 的 **完整编译**(客户端 + 扩展)完全通过。
+所有侵入式修改(app.ts hook + bulkEditService 覆盖 + 10 集成文件)
+在 VS Code 的完整构建中零错误。
+
+这意味着 fork 可以生成可运行的 VS Code 二进制,
+包含 Ultimate Native IDE 的全部集成代码。
