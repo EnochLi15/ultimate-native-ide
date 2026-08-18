@@ -1,0 +1,22 @@
+{
+  "name": "@ultimate-ide/extension-bridge",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "R6: the bidirectional capability bridge between VS Code's Extension Host (EH) and the DSH Agent Host (AH). EH contributions (models, tools, chat participants, LSP) flow INTO the agent; agent capabilities (tools, session log) flow OUT to extensions.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./eh-to-ah": "./src/eh-to-ah.ts",
+    "./ah-to-eh": "./src/ah-to-eh.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
