@@ -1,0 +1,25 @@
+{
+  "name": "@ultimate-ide/contracts",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Deep contract type layer shared between the VS Code renderer and the DSH Agent Host. The single source of truth for cross-process RPC types; both sides import these, so type drift surfaces at compile time.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./brand": "./src/brand.ts",
+    "./ids": "./src/ids.ts",
+    "./agent": "./src/agent.ts",
+    "./session": "./src/session.ts",
+    "./fs": "./src/fs.ts",
+    "./tools": "./src/tools.ts",
+    "./rpc": "./src/rpc.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
