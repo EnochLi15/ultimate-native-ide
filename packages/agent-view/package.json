@@ -1,0 +1,22 @@
+{
+  "name": "@ultimate-ide/agent-view",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "R5: the native agent interaction surface — replaces VS Code's chat contrib view with a multi-mode agent panel (inline command bar, full-screen task mode, review mode). Not a fixed sidebar chat; it's the agent's primary orchestration surface that can reshape itself to the task.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./modes": "./src/modes.ts",
+    "./state": "./src/state.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

@@ -95,7 +95,8 @@ export interface TerminalExitEvent {
 export interface ApprovalRequest {
   readonly id: string
   readonly sessionId: SessionId
-  readonly kind: 'bash' | 'fs-write' | 'fs-edit' | 'escalation'
+  /** The type of action requiring approval. */
+  readonly approvalKind: 'bash' | 'fs-write' | 'fs-edit' | 'escalation'
   /** Human-readable description of the action. */
   readonly description: string
   /** The tool call id that triggered the approval, if any. */

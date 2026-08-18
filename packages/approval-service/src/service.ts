@@ -154,7 +154,7 @@ export class ApprovalService {
  * Helper: classify the severity of an approval request for UI styling.
  */
 export function approvalSeverity(request: ApprovalRequest): 'low' | 'medium' | 'high' {
-  switch (request.kind) {
+  switch (request.approvalKind) {
     case 'bash':
       return 'medium'
     case 'fs-write':

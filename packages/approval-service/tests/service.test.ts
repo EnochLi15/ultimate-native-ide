@@ -8,8 +8,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { ApprovalService, approvalSeverity } from '../src/index.ts'
 import type { ApprovalRequest } from '@ultimate-ide/contracts/rpc'
 
-function makeRequest(id: string, kind: ApprovalRequest['kind'] = 'bash'): ApprovalRequest {
-  return { id, sessionId: 's1' as never, kind, description: `test ${kind}`, callId: `call-${id}` }
+function makeRequest(id: string, approvalKind: ApprovalRequest['approvalKind'] = 'bash'): ApprovalRequest {
+  return { id, sessionId: 's1' as never, approvalKind, description: `test ${approvalKind}`, callId: `call-${id}` }
 }
 
 describe('R1.6: approval service', () => {
