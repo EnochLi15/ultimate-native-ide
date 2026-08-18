@@ -7,20 +7,11 @@
  * R5: VS Code workbench renderer binding — connects the agent-view state
  * machine to VS Code's workbench UI.
  *
- * This module:
- *  1. Subscribes to AgentHostEvent stream from the IdeBridge service.
- *  2. Feeds events into the reduceAgentView reducer.
- *  3. Exposes the reactive state for VS Code UI components to consume.
- *  4. Provides commands for mode switching, prompt submission, approval response.
- *
- * Applied in the VS Code fork's workbench layer (not a contrib — a service
- * registered during startup, consumed by the agent panel UI).
- *
  * @module vs/workbench/contrib/ultimateNative/agentViewBinding
  */
 
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { Emitter, Event } from 'vs/base/common/event';
+import { DisposableStore } from '../../../base/common/lifecycle.js';
+import { Emitter, Event } from '../../../base/common/event.js';
 import {
   type AgentViewState,
   type AgentViewMode,
@@ -29,19 +20,17 @@ import {
   setMode,
   setConnected,
   resolveApproval,
-} from './agent-view-state';
+} from './agent-view-state.js';
 
 /**
  * The agent view state service — the bridge between the IdeBridge event stream
  * and the VS Code UI.
- *
- * In the VS Code fork, this is registered as IIdeAgentViewService during
- * Workbench.startup, right after the IdeBridge is connected.
  */
-export class AgentViewService extends Disposable {
+export class AgentViewService {
   private _state: AgentViewState = initialAgentViewState;
+  private readonly _store = new DisposableStore();
 
-  private readonly _onDidChangeState = this._register(new Emitter<AgentViewState>());
+  private readonly _onDidChangeState = this._store.add(new Emitter<AgentViewState>());
   readonly onDidChangeState: Event<AgentViewState> = this._onDidChangeState.event;
 
   /** Get the current state. */
@@ -82,15 +71,12 @@ export class AgentViewService extends Disposable {
   get isRunning(): boolean {
     return this._state.agentStatus === 'running';
   }
+
+  dispose(): void {
+    this._store.dispose();
+  }
 }
 
-/**
- * The agent-view-state module re-export (so VS Code can import the pure logic
- * without the @ultimate-ide package resolution).
- *
- * In the full fork, these are either bundled or the @ultimate-ide/agent-view
- * package is linked into VS Code's node_modules.
- */
 export {
   type AgentViewState,
   type AgentViewMode,
@@ -99,4 +85,4 @@ export {
   setMode,
   setConnected,
   resolveApproval,
-} from './agent-view-state';
+} from './agent-view-state.js';

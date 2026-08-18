@@ -710,6 +710,7 @@ export class CodeApplication extends Disposable {
 				// is special in that it does not orderly shutdown
 				// windows.
 				mainProcessElectronServer.dispose();
+				this._ultimateNativeAgentHostConnection?.dispose();
 			}
 		});
 
@@ -1488,16 +1489,16 @@ export class CodeApplication extends Disposable {
 		const agentHostScript = process.env.ULTIMATE_NATIVE_AGENT_HOST_SCRIPT
 			?? path.join(__dirname, '..', '..', '..', '..', 'packages', 'agent-host', 'src', 'cli.ts');
 
-		// Dynamic import to avoid loading the spawner until needed.
-		const { spawnAgentHost } = await import('vs/platform/ultimateNative/electron-main/agentHostSpawner');
-		this._ultimateNativeAgentHost = await spawnAgentHost(workspaceRoot, dshHome, agentHostScript);
+		const { spawnAgentHost } = await import('../../platform/ultimateNative/electron-main/agentHostSpawner.js');
+		const connection = await spawnAgentHost(workspaceRoot, dshHome, agentHostScript);
+		this._ultimateNativeAgentHostConnection = connection;
 
 		// The renderer port is delivered to BrowserWindows via preload IPC.
-		// The windowsMainService will send it when each window is created.
-		console.log('[ultimate-native] Agent Host spawned');
+		// Store the connection for window creation to access.
+		console.log('[ultimate-native] Agent Host spawned, port ready:', !!connection.rendererPort);
 	}
 
-	private _ultimateNativeAgentHost: { rendererPort: MessageChannelMain['port1']; dispose(): void } | undefined;
+	private _ultimateNativeAgentHostConnection: { rendererPort: MessageChannelMain['port1']; dispose(): void } | undefined;
 
 	private async openFirstWindow(accessor: ServicesAccessor, initialProtocolUrls: IInitialProtocolUrls | undefined): Promise<ICodeWindow[]> {
 		const windowsMainService = this.windowsMainService = accessor.get(IWindowsMainService);
