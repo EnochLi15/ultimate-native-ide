@@ -21,3 +21,10 @@ vendor/dsh/vendor/*/*
 
 # Root node_modules symlinks into vendored DSH (rebuilt by setup)
 node_modules/@deepseek-ai/
+
+# VS Code vendored build artifacts (rebuilt from source)
+vendor/vscode/node_modules/
+vendor/vscode/.build/
+vendor/vscode/out/
+vendor/vscode/out-vscode/
+vendor/vscode/out-vscode-min/
