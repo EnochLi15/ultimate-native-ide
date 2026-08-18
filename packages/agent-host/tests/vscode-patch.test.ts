@@ -84,6 +84,16 @@ describe('R0.4: VS Code fork integration patches', () => {
     expect(content).toContain('AgentViewMode')
   })
 
+  it('provenanceIntegration.ts exists with BulkEditService decorator', () => {
+    const file = resolve(vscodeRoot, 'src/vs/workbench/contrib/ultimateNative/provenanceIntegration.ts')
+    expect(existsSync(file)).toBe(true)
+    const content = readFileSync(file, 'utf-8')
+    expect(content).toContain('ProvenanceBulkEditService')
+    expect(content).toContain('IBulkEditService')
+    expect(content).toContain('agentProvenance')
+    expect(content).toContain('__provenance')
+  })
+
   it('all VS Code module imports point to existing files', () => {
     const imports = [
       'src/vs/base/common/lifecycle.ts',
