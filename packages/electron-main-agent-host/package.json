@@ -1,0 +1,21 @@
+{
+  "name": "@ultimate-ide/electron-main-agent-host",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "electron-main module that spawns the Agent Host as a UtilityProcess and creates a MessageChannelMain to connect it to the renderer. Applied to the VS Code fork's electron-main entry.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./spawner": "./src/spawner.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

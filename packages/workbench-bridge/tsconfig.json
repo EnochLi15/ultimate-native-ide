@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ultimate-ide/contracts": ["../contracts/src/index.ts"],
+      "@ultimate-ide/contracts/*": ["../contracts/src/*"],
+      "@ultimate-ide/ide-bridge-renderer": ["../ide-bridge-renderer/src/index.ts"]
+    },
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@ultimate-ide/workbench-bridge",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "The renderer-side workbench integration: receives the MessagePort from electron-main, creates an IdeBridge, and registers it as a VS Code workbench service. Applied to the VS Code fork's Workbench.startup().",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./service": "./src/service.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultimate-ide/contracts": "workspace:*",
+    "@ultimate-ide/ide-bridge-renderer": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
