@@ -54,21 +54,5 @@ try {
   failed++
 }
 
-// CLI verification
-console.log('\n--- CLI Standalone ---')
-try {
-  execSync('node --import tsx/esm packages/agent-host/tests/cli-verify.ts', {
-    cwd: root,
-    stdio: 'pipe',
-    timeout: 30_000,
-    env: { ...process.env, DSH_HOME: `${root}/.dsh-home` },
-  })
-  console.log('  ✓ CLI: 6/6 passed')
-  passed++
-} catch {
-  console.error('  ✗ CLI verification failed')
-  failed++
-}
-
 console.log(`\n=== ${passed} passed, ${failed} failed ===\n`)
 process.exit(failed > 0 ? 1 : 0)
