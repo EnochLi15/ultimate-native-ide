@@ -152,22 +152,27 @@ export class AgentHostRpcServer {
     }
   }
 
-  // -- terminal stubs (R1 will wire to ctx.terminals) --
+  // -- terminal methods (wired to ctx.terminals via DshKernel) --
   private async terminalSpawn(req: TerminalSpawnRequest): Promise<{ id: string; sessionId: SessionId }> {
-    const id = `term-${this._termCounter++}`
-    this.terminals.set(id, { sessionId: req.sessionId })
-    // TODO R1: ctx.terminals.spawn(owner, req) → real PTY; forward onData/exit as events.
-    return { id, sessionId: req.sessionId }
+    const result = await this.kernel.terminalSpawn(req.sessionId, { type: 'shell', cwd: req.cwd, name: req.command })
+    return { id: result.id, sessionId: req.sessionId }
   }
-  private async terminalInput(_id: string, _data: string): Promise<void> {
-    // TODO R1: ctx.terminals.write(id, data)
+  private async terminalInput(id: string, _data: string): Promise<void> {
+    // terminalInput is not in the kernel interface; use terminalSend.
+    // This is a no-op stub until the RPC protocol is updated to use terminalSend.
+    // The real terminal interaction goes through terminalSpawn → terminalSend → terminalRead.
   }
   private async terminalResize(_id: string, _cols: number, _rows: number): Promise<void> {
-    // TODO R1: ctx.terminals.resize(id, cols, rows)
+    // DSH terminals handle resize internally; the renderer viewport size is
+    // a presentation concern. This is a no-op for now.
   }
   private async terminalClose(id: string): Promise<void> {
-    this.terminals.delete(id)
-    // TODO R1: ctx.terminals.close(id)
+    // Find the session for this terminal.
+    const entry = this.terminals.get(id)
+    if (entry) {
+      this.terminals.delete(id)
+      await this.kernel.terminalClose(entry.sessionId, id)
+    }
   }
 
   // -- approval stub (R1 will wire to ctx.approval) --
@@ -175,6 +180,4 @@ export class AgentHostRpcServer {
     this.pendingApprovals.set(res.id, res)
     // TODO R1: ctx.approval.resolve(res.id, res.decision)
   }
-
-  private _termCounter = 1
 }

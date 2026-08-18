@@ -66,6 +66,11 @@ export interface DshKernel {
   fsWriteText(target: FsTarget, content: string, intent?: FsWriteIntent): Promise<FsWriteOutcome>
   fsEditText(target: FsTarget, edit: FsEdit, intent?: FsWriteIntent): Promise<FsWriteOutcome>
   fsListDir(target: FsTarget): Promise<FsDirEntry[]>
+  // -- ctx.terminals (shared execution world) --
+  terminalSpawn(sessionId: SessionId, request: { type?: string; cwd?: string; name?: string }): Promise<{ id: string; motd: string }>
+  terminalSend(sessionId: SessionId, terminalId: string, text: string, submit: boolean): Promise<{ viewport: string; waitReason: string }>
+  terminalRead(sessionId: SessionId, terminalId: string): Promise<{ text: string; totalLines: number }>
+  terminalClose(sessionId: SessionId, terminalId: string): Promise<boolean>
   dispose(): Promise<void>
 }
 
@@ -308,5 +313,70 @@ class LiveDshKernel implements DshKernel {
 
   async dispose(): Promise<void> {
     await this.shutdown.shutdown(0)
+  }
+
+  // -- ctx.terminals (shared execution world) --
+  /** Maps terminalId → { sessionId, dshTerminalId } for routing. */
+  private readonly terminals = new Map<string, { sessionId: string; dshId: string }>()
+
+  async terminalSpawn(sessionId: SessionId, request: { type?: string; cwd?: string; name?: string }): Promise<{ id: string; motd: string }> {
+    const terminals = this.ctx.get('terminals')
+    if (!terminals) throw new Error('dsh-boot: ctx.terminals not available')
+    const agents = this.ctx.get('agents')
+    const agent = agents?.get(sessionId)
+    if (!agent) throw new Error(`dsh-boot: agent ${sessionId} not found for terminal spawn`)
+    // Default backend type is 'bash' (registered by dsh-terminal-bash).
+    const result = await terminals.spawn(agent as never, {
+      type: request.type ?? 'bash',
+      cwd: request.cwd,
+      ...(request.name ? { name: request.name } : {}),
+    } as never) as { sessionId: string; motd: string; pid?: number; status: { kind: string } }
+    // Map our id → DSH terminal id.
+    const ourId = `term-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    this.terminals.set(ourId, { sessionId: sessionId as string, dshId: result.sessionId })
+    return { id: ourId, motd: result.motd }
+  }
+
+  async terminalSend(sessionId: SessionId, terminalId: string, text: string, submit: boolean): Promise<{ viewport: string; waitReason: string }> {
+    const terminals = this.ctx.get('terminals')
+    if (!terminals) throw new Error('dsh-boot: ctx.terminals not available')
+    const agents = this.ctx.get('agents')
+    const agent = agents?.get(sessionId)
+    if (!agent) throw new Error(`dsh-boot: agent ${sessionId} not found`)
+    const mapping = this.terminals.get(terminalId)
+    if (!mapping) throw new Error(`dsh-boot: terminal ${terminalId} not found`)
+    // startSend returns a TerminalSendOperation with .done and .readOutput().
+    const op = terminals.startSend(agent as never, mapping.dshId as never, { text, submit } as never) as {
+      done: Promise<{ viewport: string; waitReason: string }>
+      readOutput(): { delta: string; truncated: boolean }
+      cancel(): boolean
+    }
+    // Collect any immediate output, then await settlement.
+    const result = await op.done
+    return { viewport: result.viewport, waitReason: result.waitReason }
+  }
+
+  async terminalRead(sessionId: SessionId, terminalId: string): Promise<{ text: string; totalLines: number }> {
+    const terminals = this.ctx.get('terminals')
+    if (!terminals) throw new Error('dsh-boot: ctx.terminals not available')
+    const agents = this.ctx.get('agents')
+    const agent = agents?.get(sessionId)
+    if (!agent) throw new Error(`dsh-boot: agent ${sessionId} not found`)
+    const mapping = this.terminals.get(terminalId)
+    if (!mapping) throw new Error(`dsh-boot: terminal ${terminalId} not found`)
+    const result = terminals.read(agent as never, mapping.dshId as never) as { text: string; totalLines: number }
+    return { text: result.text, totalLines: result.totalLines }
+  }
+
+  async terminalClose(sessionId: SessionId, terminalId: string): Promise<boolean> {
+    const terminals = this.ctx.get('terminals')
+    if (!terminals) return false
+    const agents = this.ctx.get('agents')
+    const agent = agents?.get(sessionId)
+    if (!agent) return false
+    const mapping = this.terminals.get(terminalId)
+    if (!mapping) return false
+    this.terminals.delete(terminalId)
+    return terminals.kill(agent as never, mapping.dshId as never, 'agent-host closed') as unknown as boolean
   }
 }

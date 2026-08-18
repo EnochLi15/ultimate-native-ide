@@ -1,3 +1,10 @@
-# Patch layer: keep the base composition, suppress nothing.
-# The agent-host profile mounts only dsh-base (DEFAULT_PROFILE_BUNDLES).
-[]
+# Patch layer for the agent-host profile.
+# Adds terminal capability (not in dsh-base by default) so the Agent Host
+# can spawn PTY sessions for the shared execution world.
+- insert:
+    - id: terminal
+      name: '@deepseek-ai/dsh-terminal'
+    - id: terminal-bash
+      name: '@deepseek-ai/dsh-terminal-bash'
+    - id: tool-terminal
+      name: '@deepseek-ai/dsh-tool-terminal'

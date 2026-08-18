@@ -64,8 +64,14 @@ cat > "$DSH_HOME/profiles/agent-host/cordis.yml" << 'YML'
 []
 YML
 cat > "$DSH_HOME/profiles/agent-host/cordis.patch.yml" << 'YML'
-# Patch layer: keep the base composition, suppress nothing.
-[]
+# Patch layer: adds terminal capability (not in dsh-base by default).
+- insert:
+    - id: terminal
+      name: '@deepseek-ai/dsh-terminal'
+    - id: terminal-bash
+      name: '@deepseek-ai/dsh-terminal-bash'
+    - id: tool-terminal
+      name: '@deepseek-ai/dsh-tool-terminal'
 YML
 
 echo "=== 6. Link DSH packages into profile node_modules ==="
