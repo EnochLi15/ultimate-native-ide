@@ -66,6 +66,24 @@ describe('R0.4: VS Code fork integration patches', () => {
     expect(content).toContain('homedir')
   })
 
+  it('agentViewBinding.ts exists and provides a state service', () => {
+    const file = resolve(vscodeRoot, 'src/vs/workbench/contrib/ultimateNative/agentViewBinding.ts')
+    expect(existsSync(file)).toBe(true)
+    const content = readFileSync(file, 'utf-8')
+    expect(content).toContain('AgentViewService')
+    expect(content).toContain('onDidChangeState')
+    expect(content).toContain('processEvent')
+  })
+
+  it('agent-view-state.ts exists with the state reducer', () => {
+    const file = resolve(vscodeRoot, 'src/vs/workbench/contrib/ultimateNative/agent-view-state.ts')
+    expect(existsSync(file)).toBe(true)
+    const content = readFileSync(file, 'utf-8')
+    expect(content).toContain('reduceAgentView')
+    expect(content).toContain('initialAgentViewState')
+    expect(content).toContain('AgentViewMode')
+  })
+
   it('all VS Code module imports point to existing files', () => {
     const imports = [
       'src/vs/base/common/lifecycle.ts',
