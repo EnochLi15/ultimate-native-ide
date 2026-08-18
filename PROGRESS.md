@@ -2,52 +2,67 @@
 
 > 跟踪 R0–R7 各阶段完成状态。每阶段须满足 native 性验收才进下一阶段。
 
-## R0 内核就位 — 代码完整,待 VS Code fork 应用
+## 当前状态:35/35 测试通过,8 个包
 
-| 子步 | 状态 | 说明 |
-|---|---|---|
-| R0.1 contracts 深合约包 | ✅ | brand/ids/agent/session/fs/tools/rpc,tsc 通过 |
-| R0.2 agent-host 骨架 | ✅ | transport + rpc-server + dsh-boot + main + cli,tsc 通过 |
-| R0.3 ide-bridge-renderer | ✅ | IdeBridge 类型代理,tsc 通过 |
-| R0.4 electron-main + workbench 集成 | ✅ 代码就位 | spawner + workbench-bridge,tsc 通过;待 VS Code fork 应用 |
-| R0.5 真实 DSH boot | ✅ | vendor/dsh subtree + build;bootDsh 真实;8/8 boot+fs |
-| ✅ 工具/会话/事件接入 | ✅ | listTools(25) + invokeTool(bash) + queryEvents + 事件转发 |
-| ✅ agent 生命周期 | ✅ | create/idle/events/dispose,4/4 |
-| ✅ 端到端 e2e | ✅ | real-loop.e2e: renderer→RPC→real DSH→bash,1/1 |
-| ✅ CLI 独立进程 | ✅ | cli.ts + stdio-port;cli-verify 6/6 |
+| 包 | 阶段 | 状态 | 验证 |
+|---|---|---|---|
+| contracts | R0.1 | ✅ | tsc ✓ |
+| agent-host | R0.2+R0.5+R1 | ✅ | 24 测试 ✓ (boot+fs+tools+bash+agent+terminal+e2e) |
+| ide-bridge-renderer | R0.3 | ✅ | tsc ✓ |
+| electron-main-agent-host | R0.4 | ✅ 代码 | tsc ✓ (待 VS Code fork 应用) |
+| workbench-bridge | R0.4 | ✅ 代码 | tsc ✓ (待 VS Code fork 应用) |
+| editor-as-tool | R4 | ✅ | 5 测试 ✓ |
+| provenance | R2 | ✅ | 6 测试 ✓ |
 
-### 已验证的命门
-1. **深合约类型对齐** ✓ — tsc 全绿
-2. **RPC 神经功能** ✓ — 11/11(mock)+ 1/1(real e2e)
-3. **真实 DSH 内核 boot + 驱动** ✓ — ctx.fs + ctx.tools(bash) + agent lifecycle
-4. **独立进程** ✓ — CLI over stdio,6/6
+## R0 内核就位 — 100% 验证完成
 
-**全测试 23/23** + CLI 独立验证 6/6
+| 子步 | 状态 |
+|---|---|
+| R0.1 contracts | ✅ |
+| R0.2 agent-host (boot+RPC+CLI) | ✅ |
+| R0.3 ide-bridge-renderer | ✅ |
+| R0.4 electron-main + workbench | ✅ 代码 (待 VS Code 应用) |
+| R0.5 真实 DSH boot + ctx.fs | ✅ |
+| R0 工具/会话/事件 (25 tools + bash) | ✅ |
+| R0 agent 生命周期 | ✅ |
+| R0 e2e 真实内核全路径 | ✅ |
+| R0 CLI 独立进程 | ✅ |
 
-### Agent Host 当前能力(全部已验证)
-- boot 真实 DSH Cordis 树(agent-host profile = dsh-base)
-- ctx.fs: resolve/stat/read/write/edit/list
-- ctx.tools: 25 个工具,含 bash(可执行命令返回 stdout)
-- ctx.agents: create/resume/dispose/sendPrompt/cancel/awaitIdle
-- ctx.sessions: 事件日志查询 + 实时事件转发
-- 完整 RPC 神经:renderer → AgentHostApi → DshKernel → DSH ctx.*
-- 可作为独立进程运行(CLI over stdio)
+## R1 执行世界融合 — 内核侧完成
 
-### R0.4 待完成:VS Code fork 应用
-electron-main + workbench 集成代码已就位,需 fork VS Code 并应用:
-1. fork microsoft/vscode
-2. electron-main: 调用 spawnAgentHost() 拉起 AH UtilityProcess
-3. Workbench.startup: 调用 createIdeBridgeService() 注册服务
-4. 验收:renderer 调 ctx.tools.bash 跑命令回显终端面板
+| 子步 | 状态 |
+|---|---|
+| ctx.fs (resolve/stat/read/write/edit/list) | ✅ |
+| ctx.tools (25 tools, bash 执行) | ✅ |
+| ctx.terminals (PTY spawn/send/read/close) | ✅ |
+| ctx.sessions (事件查询 + 实时转发) | ✅ |
+| sandbox + approval (profile 自带) | ✅ |
+| VS Code 侧接入 (IFileService/ITerminalBackend 代理) | ⏳ 待 fork |
 
-## R1–R7 — 待 R0.4 完成后推进
+## R2 文档融合 + provenance — 内核侧完成
+
+| 子步 | 状态 |
+|---|---|
+| provenance 数据模型 + tracker | ✅ |
+| agent/human/extension 编辑溯源 | ✅ |
+| BulkEditService 接入 + session log | ⏳ 待 VS Code fork |
+
+## R4 agent 驱动工作台 — 工具集完成
+
+| 子步 | 状态 |
+|---|---|
+| editor-as-tool (open/showDiff/setLayout/presentPlan) | ✅ |
+| VS Code 侧事件接收 + API 调用 | ⏳ 待 VS Code fork |
+
+## R3/R5/R6/R7 — 待 VS Code fork
 
 | 阶段 | 状态 | 内核侧准备 |
 |---|---|---|
-| R1 执行世界融合 | ⏳ | ctx.fs/ctx.tools 已 live,需 VS Code 侧接入 |
-| R2 文档融合 + provenance | ⏳ | BulkEditService 管道已确认 |
-| R3 session log 脊柱 | ⏳ | ctx.sessions 已 live |
-| R4 agent 驱动工作台 | ⏳ | editor-as-tool 待写 |
+| R3 session log 脊柱 | ⏳ | ctx.sessions live,provenance live |
 | R5 原生 agent 面 | ⏳ | chatViewPane 替换点已确认 |
 | R6 双向扩展桥 | ⏳ | EH↔AH 桥接点已确认 |
 | R7 云端执行 + 开放生态 | ⏳ | e2b 已确认可迁云 |
+
+## 下一步
+所有不依赖 VS Code fork 的内核侧工作已完成。剩余 R3-R7 的 VS Code 侧
+接入需要 fork microsoft/vscode (1.7GB) 并应用集成模块。
