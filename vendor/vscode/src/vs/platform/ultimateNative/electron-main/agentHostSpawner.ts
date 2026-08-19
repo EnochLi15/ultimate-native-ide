@@ -41,7 +41,9 @@ export async function spawnAgentHost(
 		stdio: 'pipe',
 	});
 
-	child.postMessage({ type: 'ultimate-native-port', port: port1 }, [port1]);
+	// Send port1 to the Agent Host process as a transferable.
+	// The port must be in the transfer list, NOT in the message body.
+	child.postMessage({ type: 'ultimate-native-port' }, [port1]);
 
 	child.stderr?.on('data', (chunk: Buffer) => {
 		console.error(`[agent-host] ${chunk.toString().trim()}`);

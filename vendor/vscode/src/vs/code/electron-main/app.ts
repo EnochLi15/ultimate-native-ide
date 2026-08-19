@@ -1487,7 +1487,7 @@ export class CodeApplication extends Disposable {
 		// The Agent Host script path. In dev, this points to the ultimate-native-ide
 		// packages/agent-host/src/cli.ts (run via tsx). In production, a built JS file.
 		const agentHostScript = process.env.ULTIMATE_NATIVE_AGENT_HOST_SCRIPT
-			?? path.join(__dirname, '..', '..', '..', '..', 'packages', 'agent-host', 'src', 'cli.ts');
+			?? path.join(import.meta.dirname, '..', '..', '..', '..', 'packages', 'agent-host', 'src', 'cli.ts');
 
 		const { spawnAgentHost } = await import('../../platform/ultimateNative/electron-main/agentHostSpawner.js');
 		const connection = await spawnAgentHost(workspaceRoot, dshHome, agentHostScript);
